@@ -45,12 +45,14 @@ ZIP_NAME="${PLUGIN_NAME}-v${VERSION}.zip"
 zip -r "../$DIST_DIR/$ZIP_NAME" "$PLUGIN_NAME"
 cd ..
 
-# Calcul du hash
-echo "🔐 Calcul du hash SHA256..."
+# Calcul des hashes
+echo "🔐 Calcul des hashes..."
 sha256sum "$DIST_DIR/$ZIP_NAME" > "$DIST_DIR/$ZIP_NAME.sha256"
+md5sum "$DIST_DIR/$ZIP_NAME" > "$DIST_DIR/$ZIP_NAME.md5"
 
 echo "✅ Build terminé avec succès !"
 echo "📦 Fichier créé : $DIST_DIR/$ZIP_NAME"
 echo "📊 Taille : $(du -h "$DIST_DIR/$ZIP_NAME" | cut -f1)"
-echo "🔐 Hash : $(cat "$DIST_DIR/$ZIP_NAME.sha256")"
+echo "🔐 SHA256 : $(cat "$DIST_DIR/$ZIP_NAME.sha256")"
+echo "🔐 MD5    : $(cat "$DIST_DIR/$ZIP_NAME.md5")"
 

@@ -82,9 +82,12 @@ jobs:
     - name: 🔐 Calcul des checksums
       id: checksums
       run: |
-        ZIP_CHECKSUM=$(sha256sum dist/Jellyfin-OpenWithVLC-v${{ steps.version.outputs.version }}.zip | cut -d' ' -f1)
-        echo "checksum=$ZIP_CHECKSUM" >> $GITHUB_OUTPUT
-        echo "🔐 SHA256: $ZIP_CHECKSUM"
+        # Jellyfin utilise MD5, pas SHA256 !
+        MD5_CHECKSUM=$(md5sum dist/Jellyfin-OpenWithVLC-v${{ steps.version.outputs.version }}.zip | cut -d' ' -f1)
+        SHA256_CHECKSUM=$(sha256sum dist/Jellyfin-OpenWithVLC-v${{ steps.version.outputs.version }}.zip | cut -d' ' -f1)
+        echo "checksum=$MD5_CHECKSUM" >> $GITHUB_OUTPUT
+        echo "🔐 MD5: $MD5_CHECKSUM"
+        echo "🔐 SHA256: $SHA256_CHECKSUM"
     
     # ============================================
     # ÉTAPE 4 : CALCUL DES CHECKSUMS
@@ -168,13 +171,11 @@ jobs:
            --arg timestamp "$TIMESTAMP" \
            --arg changelog "$CHANGELOG" \
            --arg url "https://github.com/${{ github.repository }}/releases/download/v$VERSION/Jellyfin-OpenWithVLC-v$VERSION.zip" \
-           --arg sourceUrl "https://github.com/${{ github.repository }}/archive/refs/tags/v$VERSION.zip" \
            '.[0].versions = [
               {
                 "version": $version,
                 "changelog": $changelog,
                 "targetAbi": "10.11.1.0",
-                "sourceUrl": $sourceUrl,
                 "checksum": $checksum,
                 "timestamp": $timestamp,
                 "artifacts": [

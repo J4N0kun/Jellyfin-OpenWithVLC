@@ -20,7 +20,7 @@ namespace Jellyfin.Plugin.OpenWithVLC
         /// <summary>
         /// Version du plugin
         /// </summary>
-        public const string Version = "1.3.1";
+        public const string Version = "1.3.2";
 
         /// <summary>
         /// Description du plugin
