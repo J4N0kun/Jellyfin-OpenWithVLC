@@ -167,18 +167,31 @@ jobs:
         echo "✅ Manifest mis à jour"
         jq '.[0].versions[0]' manifest.json
         
-    - name: 📤 Commit du manifest mis à jour
+    - name: 📤 Commit et push du manifest mis à jour
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
         git add repository/manifest.json
-        git diff --staged --quiet || git commit -m "chore: auto-update manifest for v${{ steps.version.outputs.version }}"
-        git push || echo "Rien à pousser"
+        
+        if git diff --staged --quiet; then
+          echo "Aucun changement dans le manifest"
+        else
+          git commit -m "chore: auto-update manifest for v${{ steps.version.outputs.version }}"
+          git push
+          echo "✅ Manifest poussé - GitHub Pages se mettra à jour automatiquement"
+        fi
     
     # ============================================
-    # ÉTAPE 6 : DÉPLOIEMENT GITHUB PAGES
+    # ÉTAPE 6 : RÉSUMÉ (Pages sera déployé par workflow séparé)
     # ============================================
-    - name: 🌐 Préparation du site GitHub Pages
+    - name: ℹ️ Note sur GitHub Pages
+      run: |
+        echo "ℹ️ Le manifest a été mis à jour et poussé."
+        echo "ℹ️ GitHub Pages se mettra à jour automatiquement via le workflow séparé."
+        echo "ℹ️ Cela peut prendre 1-2 minutes supplémentaires."
+        
+    - name: 🌐 OBSOLETE - Préparation du site GitHub Pages
+      if: false
       run: |
         mkdir -p _site/repository
         cp repository/manifest.json _site/repository/
@@ -334,15 +347,18 @@ jobs:
         
         echo "✅ Site préparé"
         
-    - name: 📤 Upload du site
+    - name: 📤 OBSOLETE - Upload du site
+      if: false
       uses: actions/upload-pages-artifact@v3
       with:
         path: '_site'
         
-    - name: 🔧 Configuration de Pages
+    - name: 🔧 OBSOLETE - Configuration de Pages
+      if: false
       uses: actions/configure-pages@v4
       
-    - name: 🚀 Déploiement sur GitHub Pages
+    - name: 🚀 OBSOLETE - Déploiement sur GitHub Pages
+      if: false
       id: deployment
       uses: actions/deploy-pages@v4
       
