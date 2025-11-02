@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Jellyfin - Open With VLC
 // @namespace    https://github.com/J4N0kun/Jellyfin-OpenWithVLC
-// @version      1.4.2
+// @version      1.4.3
 // @description  Ajoute un menu contextuel "Ouvrir avec VLC" dans Jellyfin Web pour lancer les médias directement dans VLC
 // @author       J4N0kun
 // @match        https://*/*
@@ -165,58 +165,52 @@
      * Ajoute l'entrée VLC à un menu spécifique
      */
     function addVlcMenuEntry(menuButton) {
-        // Trouver le menu popup associé
-        const menuId = menuButton.getAttribute('data-menu-id');
-        let menu = menuId ? document.getElementById(menuId) : null;
-        
-        if (!menu) {
-            // Chercher le menu dans le DOM
-            menu = document.querySelector('.menu.show, .actionsheet-content.show');
+        // Récupérer l'itemId AVANT d'ouvrir le menu
+        const card = menuButton.closest('[data-id]');
+        const itemId = card ? getItemId(card) : null;
+
+        if (!itemId) {
+            console.log('[OpenWithVLC] Pas d\'itemId sur le bouton menu');
+            return;
         }
 
-        if (menu && !menu.dataset.vlcMenuAdded) {
-            menu.dataset.vlcMenuAdded = true;
-            addVlcMenuEntryToMenu(menu, menuButton);
-        }
+        // Attendre que le menu s'ouvre et lui injecter l'itemId
+        setTimeout(() => {
+            // Chercher le menu actionSheet ouvert
+            const menu = document.querySelector('.actionSheet.opened, .actionsheet.opened, .dialog.opened');
+            
+            if (menu && !menu.dataset.vlcMenuAdded) {
+                menu.dataset.vlcMenuAdded = true;
+                menu.dataset.vlcItemId = itemId; // Stocker l'itemId dans le menu
+                addVlcMenuEntryToMenu(menu, itemId);
+            }
+        }, 150); // Attendre que le menu soit complètement rendu
     }
 
     /**
      * Ajoute l'entrée VLC dans un menu
      */
-    function addVlcMenuEntryToMenu(menu, sourceButton) {
+    function addVlcMenuEntryToMenu(menu, itemId) {
         // Vérifier si déjà ajouté
         if (menu.querySelector('.vlc-menu-item')) return;
 
-        // Trouver l'Item ID
-        let itemId = null;
-        if (sourceButton) {
-            const card = sourceButton.closest('[data-id]');
-            itemId = card ? getItemId(card) : null;
-        }
-
-        // Si pas trouvé via le bouton, chercher dans le contexte
-        if (!itemId) {
-            const contextCard = document.querySelector('[data-id].detailPage-content, [data-id].itemDetailPage');
-            itemId = contextCard ? getItemId(contextCard) : null;
-        }
-
         // Ne pas ajouter le menu si on n'a pas d'itemId valide
         if (!itemId) {
-            console.log('[OpenWithVLC] Pas d\'itemId trouvé, menu ignoré');
+            console.log('[OpenWithVLC] Pas d\'itemId fourni, menu ignoré');
             return;
         }
 
-        // Créer l'élément de menu
+        // Créer l'élément de menu dans le style Jellyfin actionSheet
         const vlcItem = document.createElement('button');
-        vlcItem.className = 'listItem listItem-button vlc-menu-item';
+        vlcItem.className = 'listItem listItem-button actionSheetMenuItem emby-button vlc-menu-item';
         vlcItem.setAttribute('is', 'emby-button');
         vlcItem.setAttribute('type', 'button');
-        vlcItem.style.cssText = 'display: flex; align-items: center; padding: 0.5em 1em;';
+        vlcItem.setAttribute('data-id', 'openwithvlc');
         
         vlcItem.innerHTML = `
-            <span class="listItemIcon material-icons" style="margin-right: 1em;">▶</span>
-            <div class="listItemBody">
-                <div class="listItemBodyText">Ouvrir avec VLC</div>
+            <span class="actionsheetMenuItemIcon listItemIcon listItemIcon-transparent material-icons play_arrow" aria-hidden="true"></span>
+            <div class="listItemBody actionsheetListItemBody">
+                <div class="listItemBodyText actionSheetItemText">Ouvrir avec VLC</div>
             </div>
         `;
 
@@ -225,22 +219,28 @@
             e.stopPropagation();
             
             // Fermer le menu
-            const closeBtn = menu.querySelector('[data-action="close"]');
-            if (closeBtn) closeBtn.click();
+            menu.classList.remove('opened');
+            menu.remove();
             
             // Ouvrir avec VLC
             openWithVLC(itemId);
         };
 
-        // Ajouter au menu
-        const menuContent = menu.querySelector('.actionSheetContent, .verticalMenu');
-        if (menuContent) {
-            menuContent.appendChild(vlcItem);
+        // Ajouter au menu (chercher le conteneur de boutons)
+        const menuScroller = menu.querySelector('.actionSheetScroller, .verticalMenu');
+        if (menuScroller) {
+            // Ajouter après le bouton "Copier l'URL du flux" si présent
+            const copyStreamBtn = menuScroller.querySelector('[data-id="copy-stream"]');
+            if (copyStreamBtn) {
+                copyStreamBtn.parentNode.insertBefore(vlcItem, copyStreamBtn.nextSibling);
+            } else {
+                // Sinon ajouter en début de menu
+                menuScroller.insertBefore(vlcItem, menuScroller.firstChild);
+            }
+            console.log('[OpenWithVLC] Menu ajouté pour item:', itemId);
         } else {
-            menu.appendChild(vlcItem);
+            console.log('[OpenWithVLC] Conteneur de menu non trouvé');
         }
-
-        console.log('[OpenWithVLC] Menu ajouté pour item:', itemId);
     }
 
     /**

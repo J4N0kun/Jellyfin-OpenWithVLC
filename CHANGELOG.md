@@ -5,6 +5,25 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.4.3] - 2025-11-03
+
+### Corrigé
+- 🎯 **Menu VLC s'affiche maintenant correctement dans les actionSheets de Jellyfin**
+- ✅ Récupération de l'itemId AVANT l'ouverture du menu (depuis la carte média)
+- ✅ Style du bouton conforme aux menus Jellyfin (actionSheetMenuItem)
+- ✅ Positionnement après le bouton "Copier l'URL du flux"
+- ✅ Fermeture correcte du menu après clic
+
+### Amélioré
+- 🎨 Utilise les classes CSS natives de Jellyfin pour un rendu parfait
+- 📍 Détection améliorée des menus actionSheet (.actionSheet.opened)
+- 🔍 Logs de debug détaillés pour troubleshooting
+
+### Technique
+- Stockage de l'itemId dans `menu.dataset.vlcItemId` lors de l'ouverture
+- Sélecteur `.actionSheetScroller` pour cibler le bon conteneur
+- Délai de 150ms pour attendre le rendu complet du menu
+
 ## [1.4.2] - 2025-11-03
 
 ### Corrigé
