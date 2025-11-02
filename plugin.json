@@ -1,0 +1,12 @@
+{
+    "Name": "Jellyfin-OpenWithVLC",
+    "Id": "Jellyfin-OpenWithVLC",
+    "Version": "1.0.0",
+    "MinServerVersion": "10.11.1",
+    "MaxServerVersion": "10.*.*",
+    "Description": "Ajoute un menu contextuel pour ouvrir les médias avec VLC",
+    "Website": "https://github.com/j4n0kun/Jellyfin-OpenWithVLC",
+    "Configuration": null,
+    "DependsOn": []
+  }
+  
