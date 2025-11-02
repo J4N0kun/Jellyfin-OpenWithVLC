@@ -1,7 +1,7 @@
 {
     "Name": "OpenWithVLC",
     "Id": "OpenWithVLC",
-    "Version": "1.0.0",
+    "Version": "1.0.1",
     "MinServerVersion": "10.11.1",
     "MaxServerVersion": "10.*.*",
     "Description": "Ajoute un menu contextuel pour ouvrir les médias avec VLC",

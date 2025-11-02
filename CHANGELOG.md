@@ -5,6 +5,21 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.0.1] - 2025-11-02
+
+### Ajouté
+- 🌐 Repository Jellyfin pour installation directe depuis le catalogue
+- 📦 Workflow GitHub Actions pour mise à jour automatique du manifest
+- 🚀 GitHub Pages pour hébergement du catalogue
+- 📚 Guide de configuration (SETUP_REPOSITORY.md, QUICKSTART.md)
+- 🎨 Page web d'accueil pour le repository
+
+### Technique
+- Workflow `update-manifest.yml` pour MAJ automatique du manifest
+- Workflow `pages.yml` pour déploiement GitHub Pages
+- Script `update-manifest.sh` pour MAJ manuelle
+- Documentation complète du système de repository
+
 ## [1.0.0] - 2025-11-02
 
 ### Ajouté
@@ -36,5 +51,6 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
 ---
 
+[1.0.1]: https://github.com/J4N0kun/Jellyfin-OpenWithVLC/releases/tag/v1.0.1
 [1.0.0]: https://github.com/J4N0kun/Jellyfin-OpenWithVLC/releases/tag/v1.0.0
 
