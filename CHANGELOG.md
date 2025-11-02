@@ -5,6 +5,28 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.1.0] - 2025-11-02
+
+### Ajouté
+- ✨ Utilisation de l'API Jellyfin pour récupération des URLs de streaming
+- 🎯 Récupération automatique de l'Item ID depuis les éléments HTML
+- 📺 Affichage du nom du média dans le prompt
+- 🔍 Logs de débogage dans la console
+- 📚 Documentation de test (TESTING.md)
+
+### Amélioré
+- 🚀 **Plugin maintenant 100% fonctionnel** avec l'API Jellyfin
+- 🎨 Meilleure intégration dans les menus Jellyfin
+- 🔧 Support de plusieurs sélecteurs CSS pour compatibilité
+- ⚡ Détection améliorée des boutons de menu
+- 💪 Gestion d'erreurs robuste avec messages explicites
+
+### Technique
+- Utilise `window.ApiClient` pour accéder à l'API Jellyfin
+- Construit les URLs avec `/Videos/{itemId}/stream`
+- Support async/await pour récupération des métadonnées
+- Prévention des doublons avec dataset flags
+
 ## [1.0.1] - 2025-11-02
 
 ### Ajouté
@@ -51,6 +73,7 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
 ---
 
+[1.1.0]: https://github.com/J4N0kun/Jellyfin-OpenWithVLC/releases/tag/v1.1.0
 [1.0.1]: https://github.com/J4N0kun/Jellyfin-OpenWithVLC/releases/tag/v1.0.1
 [1.0.0]: https://github.com/J4N0kun/Jellyfin-OpenWithVLC/releases/tag/v1.0.0
 
