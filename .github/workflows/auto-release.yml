@@ -1,0 +1,366 @@
+name: 🚀 Auto Release Complete
+
+# Ce workflow fait TOUT automatiquement :
+# 1. Build du plugin
+# 2. Création de la release GitHub
+# 3. Mise à jour du manifest.json
+# 4. Déploiement sur GitHub Pages
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version (ex: 1.1.0)'
+        required: false
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  complete-release:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+    # ============================================
+    # ÉTAPE 1 : CHECKOUT & VALIDATION
+    # ============================================
+    - name: 📥 Checkout du code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+      
+    - name: 📋 Détection de la version
+      id: version
+      run: |
+        if [ "${{ github.event_name }}" == "push" ] && [ "${{ github.ref_type }}" == "tag" ]; then
+          VERSION=${GITHUB_REF#refs/tags/v}
+        elif [ -n "${{ github.event.inputs.version }}" ]; then
+          VERSION="${{ github.event.inputs.version }}"
+        else
+          VERSION=$(jq -r '.Version' plugin.json)
+        fi
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "📦 Version détectée: $VERSION"
+        
+    - name: 🔍 Validation
+      run: |
+        echo "Validation des fichiers..."
+        jq empty plugin.json || { echo "❌ plugin.json invalide"; exit 1; }
+        jq empty repository/manifest.json || { echo "❌ manifest.json invalide"; exit 1; }
+        node -c web/js/vlcMenu.js || { echo "❌ vlcMenu.js invalide"; exit 1; }
+        echo "✅ Tous les fichiers sont valides"
+    
+    # ============================================
+    # ÉTAPE 2 : BUILD DU PLUGIN
+    # ============================================
+    - name: 🔨 Build du plugin
+      run: |
+        chmod +x build.sh
+        ./build.sh
+        echo "📦 Build terminé"
+        ls -lh dist/
+        
+    - name: 🔐 Calcul des checksums
+      id: checksums
+      run: |
+        ZIP_CHECKSUM=$(sha256sum dist/Jellyfin-OpenWithVLC-v${{ steps.version.outputs.version }}.zip | cut -d' ' -f1)
+        echo "checksum=$ZIP_CHECKSUM" >> $GITHUB_OUTPUT
+        echo "🔐 SHA256: $ZIP_CHECKSUM"
+    
+    # ============================================
+    # ÉTAPE 3 : EXTRACTION DU CHANGELOG
+    # ============================================
+    - name: 📝 Extraction du changelog
+      id: changelog
+      run: |
+        VERSION="${{ steps.version.outputs.version }}"
+        
+        if [ -f CHANGELOG.md ]; then
+          # Extraire la section du changelog
+          NOTES=$(awk "/## \[$VERSION\]/,/## \[/" CHANGELOG.md | sed '1d;$d' | sed '/^$/d' || echo "")
+          
+          if [ -z "$NOTES" ]; then
+            NOTES="Version $VERSION - Voir CHANGELOG.md pour les détails"
+          fi
+        else
+          NOTES="Version $VERSION"
+        fi
+        
+        # Sauvegarder dans un fichier pour éviter les problèmes de multiline
+        echo "$NOTES" > /tmp/release_notes.txt
+        echo "📝 Changelog extrait"
+    
+    # ============================================
+    # ÉTAPE 4 : CRÉATION DE LA RELEASE GITHUB
+    # ============================================
+    - name: 🚀 Création de la release GitHub
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v${{ steps.version.outputs.version }}
+        name: v${{ steps.version.outputs.version }}
+        body_path: /tmp/release_notes.txt
+        files: |
+          dist/*.zip
+          dist/*.sha256
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    # ============================================
+    # ÉTAPE 5 : MISE À JOUR DU MANIFEST.JSON
+    # ============================================
+    - name: 📝 Mise à jour du manifest.json
+      run: |
+        VERSION="${{ steps.version.outputs.version }}"
+        CHECKSUM="${{ steps.checksums.outputs.checksum }}"
+        TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+        
+        echo "Mise à jour du manifest avec:"
+        echo "  Version: $VERSION"
+        echo "  Checksum: $CHECKSUM"
+        echo "  Timestamp: $TIMESTAMP"
+        
+        # Extraire le changelog pour cette version
+        if [ -f CHANGELOG.md ]; then
+          CHANGELOG=$(awk "/## \[$VERSION\]/,/## \[/" CHANGELOG.md | sed '1d;$d' | grep '^-' | sed 's/^- //' | tr '\n' '\\n' || echo "Version $VERSION")
+        else
+          CHANGELOG="Version $VERSION"
+        fi
+        
+        # Mettre à jour le manifest
+        cd repository
+        
+        jq --arg version "$VERSION" \
+           --arg checksum "$CHECKSUM" \
+           --arg timestamp "$TIMESTAMP" \
+           --arg changelog "$CHANGELOG" \
+           --arg url "https://github.com/${{ github.repository }}/releases/download/v$VERSION/Jellyfin-OpenWithVLC-v$VERSION.zip" \
+           --arg sourceUrl "https://github.com/${{ github.repository }}/archive/refs/tags/v$VERSION.tar.gz" \
+           '.[0].versions = [
+              {
+                "version": $version,
+                "changelog": $changelog,
+                "targetAbi": "10.11.1.0",
+                "sourceUrl": $sourceUrl,
+                "checksum": $checksum,
+                "timestamp": $timestamp,
+                "artifacts": [
+                  {
+                    "filename": ("Jellyfin-OpenWithVLC-v" + $version + ".zip"),
+                    "url": $url,
+                    "checksum": $checksum
+                  }
+                ]
+              }
+            ] + (.[0].versions // [])' manifest.json > manifest.json.tmp
+        
+        mv manifest.json.tmp manifest.json
+        
+        echo "✅ Manifest mis à jour"
+        jq '.[0].versions[0]' manifest.json
+        
+    - name: 📤 Commit du manifest mis à jour
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add repository/manifest.json
+        git diff --staged --quiet || git commit -m "chore: auto-update manifest for v${{ steps.version.outputs.version }}"
+        git push || echo "Rien à pousser"
+    
+    # ============================================
+    # ÉTAPE 6 : DÉPLOIEMENT GITHUB PAGES
+    # ============================================
+    - name: 🌐 Préparation du site GitHub Pages
+      run: |
+        mkdir -p _site/repository
+        cp repository/manifest.json _site/repository/
+        cp repository/README.md _site/repository/
+        
+        # Créer la page d'accueil
+        cat > _site/index.html <<'HTMLEOF'
+        <!DOCTYPE html>
+        <html lang="fr">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Jellyfin Plugin Repository - Open With VLC</title>
+          <style>
+            body {
+              font-family: system-ui, -apple-system, sans-serif;
+              max-width: 900px;
+              margin: 50px auto;
+              padding: 20px;
+              line-height: 1.6;
+              background: #0d0d0d;
+              color: #e0e0e0;
+            }
+            h1 { color: #00a4dc; border-bottom: 2px solid #00a4dc; padding-bottom: 10px; }
+            h2 { color: #00a4dc; margin-top: 30px; }
+            code {
+              background: #1a1a1a;
+              padding: 3px 8px;
+              border-radius: 4px;
+              font-family: 'Courier New', monospace;
+              color: #00d4ff;
+            }
+            pre {
+              background: #1a1a1a;
+              padding: 15px;
+              border-radius: 8px;
+              overflow-x: auto;
+              border-left: 4px solid #00a4dc;
+            }
+            .box {
+              background: #1a1a1a;
+              border: 1px solid #00a4dc;
+              padding: 20px;
+              border-radius: 8px;
+              margin: 20px 0;
+            }
+            .plugin-card {
+              background: #1a1a1a;
+              padding: 15px;
+              margin: 10px 0;
+              border-radius: 8px;
+              border-left: 4px solid #00d4ff;
+            }
+            a { color: #00d4ff; text-decoration: none; }
+            a:hover { text-decoration: underline; }
+            button {
+              padding: 12px 24px;
+              background: #00a4dc;
+              color: white;
+              border: none;
+              border-radius: 6px;
+              cursor: pointer;
+              font-size: 16px;
+              font-weight: 500;
+              transition: background 0.3s;
+            }
+            button:hover { background: #0088b8; }
+            .version { color: #888; font-size: 0.9em; }
+            .badge {
+              display: inline-block;
+              padding: 4px 10px;
+              background: #00a4dc;
+              border-radius: 12px;
+              font-size: 0.85em;
+              margin-left: 10px;
+            }
+          </style>
+        </head>
+        <body>
+          <h1>🎬 Jellyfin Plugin Repository</h1>
+          <h2>Open With VLC</h2>
+          
+          <p>Repository de plugins pour Jellyfin - Ouvrez vos médias directement dans VLC !</p>
+          
+          <div class="box">
+            <h3>📦 URL du Repository</h3>
+            <p>Ajoutez cette URL dans <strong>Jellyfin → Dashboard → Plugins → Repositories</strong> :</p>
+            <pre id="repoUrl" style="cursor: pointer;" onclick="copyUrl()"></pre>
+            <button onclick="copyUrl()">📋 Copier l'URL</button>
+          </div>
+          
+          <h3>📋 Plugins Disponibles</h3>
+          <div id="pluginList">
+            <p style="color: #888;">Chargement...</p>
+          </div>
+          
+          <h3>🔗 Liens Utiles</h3>
+          <ul>
+            <li>📦 <a href="https://github.com/${{ github.repository }}">GitHub Repository</a></li>
+            <li>📥 <a href="https://github.com/${{ github.repository }}/releases">Releases</a></li>
+            <li>📄 <a href="repository/manifest.json">Manifest JSON</a></li>
+            <li>📚 <a href="https://github.com/${{ github.repository }}/blob/main/README.md">Documentation</a></li>
+          </ul>
+          
+          <hr style="margin: 40px 0; border-color: #333;">
+          
+          <p style="text-align: center; color: #666;">
+            <small>Généré automatiquement par GitHub Actions • 
+            <a href="https://github.com/${{ github.repository }}/actions">Voir les builds</a>
+            </small>
+          </p>
+          
+          <script>
+            const repoUrl = window.location.origin + window.location.pathname + 'repository/manifest.json';
+            document.getElementById('repoUrl').textContent = repoUrl;
+            
+            function copyUrl() {
+              navigator.clipboard.writeText(repoUrl).then(() => {
+                const btn = document.querySelector('button');
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Copié !';
+                setTimeout(() => btn.textContent = originalText, 2000);
+              });
+            }
+            
+            // Charger et afficher les plugins
+            fetch('repository/manifest.json')
+              .then(r => r.json())
+              .then(data => {
+                const list = document.getElementById('pluginList');
+                list.innerHTML = data.map(plugin => {
+                  const latestVersion = plugin.versions[0];
+                  return `
+                    <div class="plugin-card">
+                      <h4>${plugin.name} <span class="badge">v${latestVersion.version}</span></h4>
+                      <p>${plugin.description}</p>
+                      <p class="version">
+                        📅 ${new Date(latestVersion.timestamp).toLocaleDateString('fr-FR')} •
+                        📦 <a href="${latestVersion.artifacts[0].url}">Télécharger</a>
+                      </p>
+                    </div>
+                  `;
+                }).join('');
+              })
+              .catch(err => {
+                document.getElementById('pluginList').innerHTML = 
+                  '<p style="color: #d44;">❌ Erreur de chargement du manifest</p>';
+              });
+          </script>
+        </body>
+        </html>
+        HTMLEOF
+        
+        echo "✅ Site préparé"
+        
+    - name: 📤 Upload du site
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: '_site'
+        
+    - name: 🚀 Déploiement sur GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
+      
+    # ============================================
+    # ÉTAPE 7 : RÉSUMÉ
+    # ============================================
+    - name: ✅ Résumé du déploiement
+      run: |
+        echo "🎉 ============================================"
+        echo "🎉 DÉPLOIEMENT COMPLET RÉUSSI !"
+        echo "🎉 ============================================"
+        echo ""
+        echo "📦 Version: ${{ steps.version.outputs.version }}"
+        echo "🔐 Checksum: ${{ steps.checksums.outputs.checksum }}"
+        echo ""
+        echo "🔗 URLs disponibles:"
+        echo "  • Release: https://github.com/${{ github.repository }}/releases/tag/v${{ steps.version.outputs.version }}"
+        echo "  • Site: ${{ steps.deployment.outputs.page_url }}"
+        echo "  • Manifest: ${{ steps.deployment.outputs.page_url }}repository/manifest.json"
+        echo ""
+        echo "✅ Le plugin est maintenant installable via Jellyfin !"
+
