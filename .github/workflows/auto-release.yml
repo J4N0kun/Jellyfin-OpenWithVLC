@@ -20,13 +20,11 @@ permissions:
   contents: write
   pages: write
   id-token: write
+  deployments: write
 
 jobs:
   complete-release:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     
     steps:
     # ============================================
@@ -341,6 +339,9 @@ jobs:
       with:
         path: '_site'
         
+    - name: 🔧 Configuration de Pages
+      uses: actions/configure-pages@v4
+      
     - name: 🚀 Déploiement sur GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v4
@@ -359,8 +360,8 @@ jobs:
         echo ""
         echo "🔗 URLs disponibles:"
         echo "  • Release: https://github.com/${{ github.repository }}/releases/tag/v${{ steps.version.outputs.version }}"
-        echo "  • Site: ${{ steps.deployment.outputs.page_url }}"
-        echo "  • Manifest: ${{ steps.deployment.outputs.page_url }}repository/manifest.json"
+        echo "  • Site: https://j4n0kun.github.io/Jellyfin-OpenWithVLC/"
+        echo "  • Manifest: https://j4n0kun.github.io/Jellyfin-OpenWithVLC/repository/manifest.json"
         echo ""
         echo "✅ Le plugin est maintenant installable via Jellyfin !"
 
