@@ -20,14 +20,30 @@ Ajoute un menu contextuel **"Ouvrir avec VLC"** dans Jellyfin Web pour lancer le
 
 ## 📦 Installation
 
-### Méthode 1 : Depuis les releases GitHub (recommandé)
+### Méthode 1 : Via le Repository Jellyfin (recommandé ⭐)
+
+Installation directe depuis le catalogue Jellyfin :
+
+1. Ouvrir **Jellyfin Dashboard** → **Plugins** → **Repositories**
+2. Cliquer sur **+** pour ajouter un repository
+3. Remplir les champs :
+   - **Repository Name** : `Open With VLC`
+   - **Repository URL** : `https://j4n0kun.github.io/Jellyfin-OpenWithVLC/repository/manifest.json`
+4. Cliquer sur **Save**
+5. Aller dans **Plugins** → **Catalog**
+6. Chercher **"Open With VLC"** et cliquer sur **Install**
+7. Redémarrer Jellyfin
+
+✅ **Avantage** : Mises à jour automatiques disponibles dans Jellyfin !
+
+### Méthode 2 : Installation manuelle depuis GitHub
 
 1. Télécharger la dernière version depuis [Releases](https://github.com/J4N0kun/Jellyfin-OpenWithVLC/releases)
 2. Ouvrir Jellyfin Web → **Dashboard** → **Plugins** → **Install Plugin** → **From Disk**
 3. Sélectionner le fichier ZIP téléchargé
 4. Redémarrer Jellyfin si nécessaire
 
-### Méthode 2 : Build manuel
+### Méthode 3 : Build manuel
 
 ```bash
 # Cloner le repository

@@ -1,0 +1,119 @@
+name: Update Plugin Manifest
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version du plugin (ex: 1.0.0)'
+        required: true
+        type: string
+
+jobs:
+  update-manifest:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      
+    steps:
+    - name: 📥 Checkout du code
+      uses: actions/checkout@v4
+      with:
+        ref: main
+        
+    - name: 📋 Extraction de la version
+      id: version
+      run: |
+        if [ "${{ github.event_name }}" == "release" ]; then
+          VERSION=${GITHUB_REF#refs/tags/v}
+        else
+          VERSION="${{ github.event.inputs.version }}"
+        fi
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Version: $VERSION"
+        
+    - name: 📦 Téléchargement de la release
+      run: |
+        VERSION="${{ steps.version.outputs.version }}"
+        ZIP_URL="https://github.com/${{ github.repository }}/releases/download/v${VERSION}/Jellyfin-OpenWithVLC-v${VERSION}.zip"
+        
+        echo "Téléchargement depuis: $ZIP_URL"
+        mkdir -p temp
+        curl -L -o "temp/Jellyfin-OpenWithVLC-v${VERSION}.zip" "$ZIP_URL"
+        
+    - name: 📝 Mise à jour du manifest
+      run: |
+        VERSION="${{ steps.version.outputs.version }}"
+        ZIP_PATH="temp/Jellyfin-OpenWithVLC-v${VERSION}.zip"
+        
+        # Calcul du checksum
+        CHECKSUM=$(sha256sum "$ZIP_PATH" | cut -d' ' -f1)
+        TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+        
+        echo "Checksum: $CHECKSUM"
+        echo "Timestamp: $TIMESTAMP"
+        
+        # Extraction du changelog
+        CHANGELOG="Version $VERSION"
+        if [ -f "CHANGELOG.md" ]; then
+          CHANGELOG=$(awk "/## \[$VERSION\]/,/## \[/" CHANGELOG.md | sed '$d' | tail -n +2 | sed 's/^### /- /' | sed 's/^## //' || echo "Version $VERSION")
+        fi
+        
+        # Mise à jour du manifest
+        cd repository
+        jq --arg version "$VERSION" \
+           --arg checksum "$CHECKSUM" \
+           --arg timestamp "$TIMESTAMP" \
+           --arg changelog "$CHANGELOG" \
+           --arg url "https://github.com/${{ github.repository }}/releases/download/v$VERSION/Jellyfin-OpenWithVLC-v$VERSION.zip" \
+           --arg sourceUrl "https://github.com/${{ github.repository }}/archive/refs/tags/v$VERSION.tar.gz" \
+           '.[0].versions = [
+              {
+                "version": $version,
+                "changelog": $changelog,
+                "targetAbi": "10.11.1.0",
+                "sourceUrl": $sourceUrl,
+                "checksum": $checksum,
+                "timestamp": $timestamp,
+                "artifacts": [
+                  {
+                    "filename": ("Jellyfin-OpenWithVLC-v" + $version + ".zip"),
+                    "url": $url,
+                    "checksum": $checksum
+                  }
+                ]
+              }
+            ] + (.[0].versions // [])' manifest.json > manifest.json.tmp
+        
+        mv manifest.json.tmp manifest.json
+        
+        echo "✅ Manifest mis à jour"
+        
+    - name: 🔍 Validation du manifest
+      run: |
+        cd repository
+        jq empty manifest.json || { echo "❌ Manifest invalide"; exit 1; }
+        echo "✅ Manifest valide"
+        echo ""
+        echo "Dernière version:"
+        jq '.[0].versions[0]' manifest.json
+        
+    - name: 📤 Commit et push du manifest
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add repository/manifest.json
+        git commit -m "chore: update manifest for version ${{ steps.version.outputs.version }}" || exit 0
+        git push
+        
+    - name: ✅ Manifest publié
+      run: |
+        echo "🎉 Manifest mis à jour pour la version ${{ steps.version.outputs.version }}"
+        echo ""
+        echo "📦 URL du repository Jellyfin:"
+        echo "https://raw.githubusercontent.com/${{ github.repository }}/main/repository/manifest.json"
+        echo ""
+        echo "Ou avec GitHub Pages:"
+        echo "https://${{ github.repository_owner }}.github.io/Jellyfin-OpenWithVLC/repository/manifest.json"
+

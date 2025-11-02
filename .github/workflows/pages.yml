@@ -1,0 +1,151 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'repository/**'
+  workflow_dispatch:
+
+# Permissions pour GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Concurrence: un seul déploiement à la fois
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout
+      uses: actions/checkout@v4
+      
+    - name: 🔧 Configuration de Pages
+      uses: actions/configure-pages@v4
+      
+    - name: 📦 Préparation du contenu
+      run: |
+        mkdir -p _site/repository
+        cp repository/manifest.json _site/repository/
+        cp repository/README.md _site/repository/
+        
+        # Créer une page d'index
+        cat > _site/index.html <<'EOF'
+        <!DOCTYPE html>
+        <html lang="fr">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Jellyfin Plugin Repository - Open With VLC</title>
+          <style>
+            body {
+              font-family: system-ui, -apple-system, sans-serif;
+              max-width: 800px;
+              margin: 50px auto;
+              padding: 20px;
+              line-height: 1.6;
+              background: #1a1a1a;
+              color: #e0e0e0;
+            }
+            h1 { color: #00a4dc; }
+            code {
+              background: #2a2a2a;
+              padding: 2px 6px;
+              border-radius: 3px;
+              font-family: 'Courier New', monospace;
+            }
+            pre {
+              background: #2a2a2a;
+              padding: 15px;
+              border-radius: 5px;
+              overflow-x: auto;
+            }
+            .box {
+              background: #2a2a2a;
+              border: 1px solid #00a4dc;
+              padding: 15px;
+              border-radius: 5px;
+              margin: 20px 0;
+            }
+            a { color: #00a4dc; }
+          </style>
+        </head>
+        <body>
+          <h1>🎬 Jellyfin Plugin Repository</h1>
+          <h2>Open With VLC</h2>
+          
+          <p>Repository de plugins pour Jellyfin - Menu contextuel VLC</p>
+          
+          <div class="box">
+            <h3>📦 URL du Repository</h3>
+            <p>Ajoutez cette URL dans Jellyfin → Dashboard → Plugins → Repositories :</p>
+            <pre id="repoUrl"></pre>
+            <button onclick="copyUrl()" style="padding: 10px; background: #00a4dc; color: white; border: none; border-radius: 5px; cursor: pointer;">
+              Copier l'URL
+            </button>
+          </div>
+          
+          <h3>📋 Plugins Disponibles</h3>
+          <ul id="pluginList">
+            <li>Chargement...</li>
+          </ul>
+          
+          <h3>🔗 Liens</h3>
+          <ul>
+            <li><a href="https://github.com/J4N0kun/Jellyfin-OpenWithVLC">GitHub Repository</a></li>
+            <li><a href="repository/manifest.json">Manifest JSON</a></li>
+            <li><a href="repository/README.md">Documentation</a></li>
+          </ul>
+          
+          <script>
+            const repoUrl = window.location.origin + window.location.pathname + 'repository/manifest.json';
+            document.getElementById('repoUrl').textContent = repoUrl;
+            
+            function copyUrl() {
+              navigator.clipboard.writeText(repoUrl);
+              alert('URL copiée dans le presse-papier !');
+            }
+            
+            // Charger le manifest et afficher les plugins
+            fetch('repository/manifest.json')
+              .then(r => r.json())
+              .then(data => {
+                const list = document.getElementById('pluginList');
+                list.innerHTML = data.map(plugin => `
+                  <li>
+                    <strong>${plugin.name}</strong> v${plugin.versions[0].version}
+                    <br><small>${plugin.description}</small>
+                  </li>
+                `).join('');
+              })
+              .catch(err => {
+                document.getElementById('pluginList').innerHTML = '<li>Erreur de chargement</li>';
+              });
+          </script>
+        </body>
+        </html>
+        EOF
+        
+    - name: 📤 Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: '_site'
+        
+    - name: 🚀 Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
+      
+    - name: ✅ Déploiement terminé
+      run: |
+        echo "🎉 Déploiement réussi !"
+        echo "📦 URL du repository: ${{ steps.deployment.outputs.page_url }}repository/manifest.json"
+
