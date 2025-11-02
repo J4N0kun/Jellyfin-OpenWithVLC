@@ -5,6 +5,18 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.1.2] - 2025-11-02
+
+### Technique
+- 🔧 Correction du workflow GitHub Actions pour déploiement GitHub Pages
+- 🚀 Workflow automatique complet ("🚀 Auto Release Complete")
+- ✨ Automatisation complète : Build → Release → Manifest → Pages en un seul workflow
+
+### Amélioré
+- 🎯 Workflow tout-en-un qui gère automatiquement toutes les étapes de publication
+- 📦 Build, release, mise à jour manifest et déploiement Pages entièrement automatisés
+- 🔄 Plus besoin d'interventions manuelles pour publier une nouvelle version
+
 ## [1.1.0] - 2025-11-02
 
 ### Ajouté
@@ -73,6 +85,7 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
 ---
 
+[1.1.2]: https://github.com/J4N0kun/Jellyfin-OpenWithVLC/releases/tag/v1.1.2
 [1.1.0]: https://github.com/J4N0kun/Jellyfin-OpenWithVLC/releases/tag/v1.1.0
 [1.0.1]: https://github.com/J4N0kun/Jellyfin-OpenWithVLC/releases/tag/v1.0.1
 [1.0.0]: https://github.com/J4N0kun/Jellyfin-OpenWithVLC/releases/tag/v1.0.0
