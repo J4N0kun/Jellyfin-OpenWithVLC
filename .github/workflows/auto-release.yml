@@ -58,14 +58,26 @@ jobs:
         echo "✅ Tous les fichiers sont valides"
     
     # ============================================
-    # ÉTAPE 2 : BUILD DU PLUGIN
+    # ÉTAPE 2 : BUILD DE LA DLL C# (.NET)
     # ============================================
-    - name: 🔨 Build du plugin
+    - name: 🔧 Build de la DLL C# avec Docker
+      run: |
+        chmod +x build-dotnet.sh
+        ./build-dotnet.sh
+        echo "✅ DLL .NET buildée"
+        
+    # ============================================
+    # ÉTAPE 3 : BUILD DU PACKAGE COMPLET
+    # ============================================
+    - name: 📦 Build du package ZIP (avec DLL)
       run: |
         chmod +x build.sh
         ./build.sh
         echo "📦 Build terminé"
         ls -lh dist/
+        echo ""
+        echo "📋 Contenu du ZIP:"
+        unzip -l dist/Jellyfin-OpenWithVLC-v${{ steps.version.outputs.version }}.zip
         
     - name: 🔐 Calcul des checksums
       id: checksums
@@ -75,7 +87,7 @@ jobs:
         echo "🔐 SHA256: $ZIP_CHECKSUM"
     
     # ============================================
-    # ÉTAPE 3 : EXTRACTION DU CHANGELOG
+    # ÉTAPE 4 : CALCUL DES CHECKSUMS
     # ============================================
     - name: 📝 Extraction du changelog
       id: changelog
@@ -98,7 +110,7 @@ jobs:
         echo "📝 Changelog extrait"
     
     # ============================================
-    # ÉTAPE 4 : CRÉATION DE LA RELEASE GITHUB
+    # ÉTAPE 5 : EXTRACTION DU CHANGELOG
     # ============================================
     - name: 🚀 Création de la release GitHub
       uses: softprops/action-gh-release@v1
@@ -116,7 +128,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
     # ============================================
-    # ÉTAPE 5 : MISE À JOUR DU MANIFEST.JSON
+    # ÉTAPE 6 : CRÉATION DE LA RELEASE GITHUB
     # ============================================
     - name: 📝 Mise à jour du manifest.json
       run: |
@@ -188,7 +200,7 @@ jobs:
         fi
     
     # ============================================
-    # ÉTAPE 6 : RÉSUMÉ
+    # ÉTAPE 7 : MISE À JOUR DU MANIFEST.JSON
     # ============================================
     - name: ℹ️ Note sur GitHub Pages
       run: |
@@ -197,7 +209,7 @@ jobs:
         echo "ℹ️ Cela peut prendre 1-2 minutes supplémentaires."
     
     # ============================================
-    # ÉTAPE 7 : RÉSUMÉ
+    # ÉTAPE 8 : RÉSUMÉ
     # ============================================
     - name: ✅ Résumé du déploiement
       run: |
