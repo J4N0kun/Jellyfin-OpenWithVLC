@@ -143,10 +143,22 @@ jobs:
         
         # Extraire le changelog pour cette version
         if [ -f CHANGELOG.md ]; then
-          CHANGELOG=$(awk "/## \[$VERSION\]/,/## \[/" CHANGELOG.md | sed '1d;$d' | grep '^-' | sed 's/^- //' | tr '\n' '\\n' || echo "Version $VERSION")
+          # Extraire tout entre ## [VERSION] et le prochain ##
+          CHANGELOG=$(awk "/## \[$VERSION\]/,/^## \[/{if(/^## \[$VERSION\]/) next; if(/^## \[/) exit; print}" CHANGELOG.md | \
+                      sed '/^$/d' | \
+                      sed 's/^### //' | \
+                      sed 's/^- //' | \
+                      tr '\n' '\\n' || echo "Version $VERSION")
+          
+          # Si le changelog est vide, utiliser un message par défaut
+          if [ -z "$CHANGELOG" ] || [ "$CHANGELOG" = "\\n" ]; then
+            CHANGELOG="Version $VERSION - Voir CHANGELOG.md pour les détails"
+          fi
         else
           CHANGELOG="Version $VERSION"
         fi
+        
+        echo "📝 Changelog extrait: $CHANGELOG"
         
         # Mettre à jour le manifest
         cd repository
@@ -156,7 +168,7 @@ jobs:
            --arg timestamp "$TIMESTAMP" \
            --arg changelog "$CHANGELOG" \
            --arg url "https://github.com/${{ github.repository }}/releases/download/v$VERSION/Jellyfin-OpenWithVLC-v$VERSION.zip" \
-           --arg sourceUrl "https://github.com/${{ github.repository }}/archive/refs/tags/v$VERSION.tar.gz" \
+           --arg sourceUrl "https://github.com/${{ github.repository }}/archive/refs/tags/v$VERSION.zip" \
            '.[0].versions = [
               {
                 "version": $version,
