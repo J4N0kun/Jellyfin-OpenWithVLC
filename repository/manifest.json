@@ -8,6 +8,20 @@
     "overview": "Menu contextuel VLC pour Jellyfin Web",
     "versions": [
       {
+        "version": "1.3.2",
+        "changelog": "Version 1.3.2 - Voir CHANGELOG.md pour les détails",
+        "targetAbi": "10.11.1.0",
+        "checksum": "40b4d618487b1d1c4ca3d05f48dfd01e",
+        "timestamp": "2025-11-02T22:53:20Z",
+        "artifacts": [
+          {
+            "filename": "Jellyfin-OpenWithVLC-v1.3.2.zip",
+            "url": "https://github.com/J4N0kun/Jellyfin-OpenWithVLC/releases/download/v1.3.2/Jellyfin-OpenWithVLC-v1.3.2.zip",
+            "checksum": "40b4d618487b1d1c4ca3d05f48dfd01e"
+          }
+        ]
+      },
+      {
         "version": "1.3.1",
         "changelog": "CRITIQUE : DLL maintenant incluse dans le package ZIP\nWorkflow auto-release lance build-dotnet.sh AVANT build.sh\nLe ZIP contient désormais OpenWithVLC.dll (5 Ko)\nPackage complet : DLL + JavaScript + plugin.json",
         "targetAbi": "10.11.1.0",
