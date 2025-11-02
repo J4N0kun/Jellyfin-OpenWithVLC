@@ -5,6 +5,27 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.5.0] - 2025-11-03
+
+### Ajouté
+- 🎨 **Boîte de dialogue personnalisée** remplaçant le `prompt()` natif
+- ✅ Copie automatique de l'URL dans le presse-papiers
+- 🔗 Bouton cliquable "Ouvrir dans VLC" avec protocole `vlc://`
+- 📋 Champ de saisie pour copier manuellement l'URL
+- 💡 Aide contextuelle pour utiliser VLC
+
+### Corrigé
+- 🔧 **CRITIQUE : L'écran ne reste plus sombre après fermeture du menu**
+- ❌ Suppression correcte du backdrop après clic sur "Ouvrir avec VLC"
+- ✅ Fermeture propre du menu actionSheet et de son fond sombre
+- ✅ L'interface reste utilisable après ouverture du dialogue
+
+### Amélioré
+- 🎯 UX grandement améliorée avec dialogue moderne
+- 🖱️ Clic sur le champ URL pour sélectionner automatiquement
+- 🎨 Design cohérent avec l'interface Jellyfin
+- ⌨️ Fermeture du dialogue en cliquant en dehors (backdrop)
+
 ## [1.4.3] - 2025-11-03
 
 ### Corrigé

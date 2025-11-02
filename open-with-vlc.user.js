@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Jellyfin - Open With VLC
 // @namespace    https://github.com/J4N0kun/Jellyfin-OpenWithVLC
-// @version      1.4.3
+// @version      1.5.0
 // @description  Ajoute un menu contextuel "Ouvrir avec VLC" dans Jellyfin Web pour lancer les médias directement dans VLC
 // @author       J4N0kun
 // @match        https://*/*
@@ -102,11 +102,118 @@
     }
 
     /**
+     * Affiche une notification toast Jellyfin
+     */
+    function showNotification(message, isError = false) {
+        // Utiliser l'API de notification Jellyfin si disponible
+        if (window.Emby && window.Emby.Notifications) {
+            window.Emby.Notifications.show({
+                message: message,
+                type: isError ? 'error' : 'success'
+            });
+        } else if (window.Dashboard && window.Dashboard.alert) {
+            window.Dashboard.alert(message);
+        } else {
+            // Fallback : console
+            console.log('[OpenWithVLC]', message);
+        }
+    }
+
+    /**
+     * Affiche une boîte de dialogue personnalisée avec l'URL
+     */
+    function showVlcDialog(mediaName, streamUrl) {
+        const vlcUrl = `vlc://${streamUrl}`;
+        
+        const dialogHtml = `
+            <div class="dialog vlc-dialog" style="
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: #181818;
+                border-radius: 8px;
+                padding: 2em;
+                max-width: 600px;
+                width: 90%;
+                z-index: 10000;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            ">
+                <h2 style="margin-top: 0; color: #fff;">🎬 ${mediaName}</h2>
+                <p style="color: #ccc;">URL de streaming copiée dans le presse-papiers !</p>
+                <div style="margin: 1.5em 0;">
+                    <label style="color: #aaa; display: block; margin-bottom: 0.5em;">Collez cette URL dans VLC :</label>
+                    <input type="text" readonly value="${streamUrl}" style="
+                        width: 100%;
+                        padding: 0.75em;
+                        background: #252525;
+                        border: 1px solid #444;
+                        border-radius: 4px;
+                        color: #fff;
+                        font-family: monospace;
+                        font-size: 0.9em;
+                    " onclick="this.select()">
+                </div>
+                <div style="margin: 1.5em 0;">
+                    <a href="${vlcUrl}" style="
+                        display: inline-block;
+                        padding: 0.75em 1.5em;
+                        background: #00A4DC;
+                        color: white;
+                        text-decoration: none;
+                        border-radius: 4px;
+                        margin-right: 1em;
+                    ">▶ Ouvrir dans VLC</a>
+                    <button class="vlc-close-btn" style="
+                        padding: 0.75em 1.5em;
+                        background: #444;
+                        color: white;
+                        border: none;
+                        border-radius: 4px;
+                        cursor: pointer;
+                    ">Fermer</button>
+                </div>
+                <p style="color: #888; font-size: 0.85em; margin-bottom: 0;">
+                    💡 Astuce : VLC → Média → Ouvrir un flux réseau
+                </p>
+            </div>
+        `;
+
+        const backdrop = document.createElement('div');
+        backdrop.className = 'vlc-backdrop';
+        backdrop.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 9999;
+        `;
+        backdrop.innerHTML = dialogHtml;
+
+        const closeDialog = () => {
+            backdrop.remove();
+        };
+
+        backdrop.addEventListener('click', (e) => {
+            if (e.target === backdrop) closeDialog();
+        });
+
+        const closeBtn = backdrop.querySelector('.vlc-close-btn');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', closeDialog);
+        }
+
+        document.body.appendChild(backdrop);
+    }
+
+    /**
      * Ouvre le média avec VLC
      */
     async function openWithVLC(itemId) {
         if (!itemId) {
-            alert('❌ Impossible de récupérer l\'ID du média.');
+            showNotification('❌ Impossible de récupérer l\'ID du média.', true);
             return;
         }
 
@@ -116,7 +223,7 @@
         const streamUrl = getDirectPlayUrl(itemId);
         
         if (!streamUrl) {
-            alert('❌ Impossible de générer l\'URL de streaming.\n\nVérifiez que vous êtes connecté à Jellyfin.');
+            showNotification('❌ Impossible de générer l\'URL de streaming.', true);
             return;
         }
 
@@ -126,17 +233,16 @@
         const mediaInfo = await getMediaInfo(itemId);
         const mediaName = mediaInfo ? (mediaInfo.Name || 'Média') : 'Média';
 
-        // Afficher l'URL dans un prompt pour copie dans VLC
-        const message = `🎬 ${mediaName}\n\n` +
-                       `Copiez cette URL dans VLC :\n` +
-                       `Média → Ouvrir un flux réseau\n\n` +
-                       `Ou utilisez vlc://open/${encodeURIComponent(streamUrl)}`;
+        // Copier l'URL dans le presse-papiers
+        try {
+            await navigator.clipboard.writeText(streamUrl);
+            console.log('[OpenWithVLC] URL copiée dans le presse-papiers');
+        } catch (err) {
+            console.warn('[OpenWithVLC] Impossible de copier dans le presse-papiers:', err);
+        }
 
-        prompt(message, streamUrl);
-
-        // Optionnel : Tenter d'ouvrir avec le protocole vlc:// si configuré
-        // Décommentez la ligne suivante pour essayer l'ouverture automatique
-        // window.open(`vlc://${streamUrl}`, '_blank');
+        // Afficher la boîte de dialogue personnalisée
+        showVlcDialog(mediaName, streamUrl);
     }
 
     /**
@@ -218,9 +324,19 @@
             e.preventDefault();
             e.stopPropagation();
             
-            // Fermer le menu
+            // Fermer le menu ET son backdrop
             menu.classList.remove('opened');
-            menu.remove();
+            
+            // Supprimer aussi le backdrop (fond sombre)
+            const backdrop = document.querySelector('.dialogBackdrop, .backdrop');
+            if (backdrop) {
+                backdrop.remove();
+            }
+            
+            // Supprimer le menu
+            setTimeout(() => {
+                menu.remove();
+            }, 100);
             
             // Ouvrir avec VLC
             openWithVLC(itemId);
