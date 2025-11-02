@@ -8,6 +8,21 @@
     "overview": "Menu contextuel VLC pour Jellyfin Web",
     "versions": [
       {
+        "version": "1.2.0",
+        "changelog": "- Synchronisation parfaite entre tags Git et versions du plugin\n- Version dans plugin.json correspond désormais toujours au tag\n- Workflow automatique entièrement opérationnel",
+        "targetAbi": "10.11.1.0",
+        "sourceUrl": "https://github.com/J4N0kun/Jellyfin-OpenWithVLC/archive/refs/tags/v1.2.0.tar.gz",
+        "checksum": "14ff0320029f5bb2aabd497a7ecaebd3adfad73f8e7083002f48a5d97ee9a094",
+        "timestamp": "2025-11-02T22:50:00Z",
+        "artifacts": [
+          {
+            "filename": "Jellyfin-OpenWithVLC-v1.2.0.zip",
+            "url": "https://github.com/J4N0kun/Jellyfin-OpenWithVLC/releases/download/v1.2.0/Jellyfin-OpenWithVLC-v1.2.0.zip",
+            "checksum": "14ff0320029f5bb2aabd497a7ecaebd3adfad73f8e7083002f48a5d97ee9a094"
+          }
+        ]
+      },
+      {
         "version": "1.1.0",
         "changelog": "- Utilisation de l'API Jellyfin pour récupération des URLs\n- Récupération automatique de l'Item ID\n- Affichage du nom du média\n- Plugin 100% fonctionnel\n- Gestion d'erreurs améliorée",
         "targetAbi": "10.11.1.0",
