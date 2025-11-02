@@ -5,6 +5,22 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.4.0] - 2025-11-03
+
+### Ajouté
+- 🎯 **Userscript Tampermonkey/Violentmonkey** (`open-with-vlc.user.js`)
+- 📦 Installation en un clic sans modifier Jellyfin
+- ✅ Méthode d'installation recommandée pour les utilisateurs finaux
+
+### Amélioré
+- 📚 Documentation README mise à jour avec méthode Tampermonkey en priorité
+- 🔄 Installation simplifiée sans redémarrage du serveur Jellyfin
+
+### Technique
+- Script compatible Tampermonkey, Violentmonkey et Userscripts (Safari iOS)
+- Auto-détection des pages Jellyfin
+- Injection automatique du menu "Ouvrir avec VLC"
+
 ## [1.3.2] - 2025-11-02
 
 ### Corrigé

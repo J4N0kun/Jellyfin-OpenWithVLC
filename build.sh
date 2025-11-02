@@ -40,10 +40,10 @@ fi
 
 # Création du ZIP
 echo "📦 Création de l'archive ZIP..."
-cd "$BUILD_DIR"
+cd "$BUILD_DIR/$PLUGIN_NAME"
 ZIP_NAME="${PLUGIN_NAME}-v${VERSION}.zip"
-zip -r "../$DIST_DIR/$ZIP_NAME" "$PLUGIN_NAME"
-cd ..
+zip -r "../../$DIST_DIR/$ZIP_NAME" .
+cd ../..
 
 # Calcul des hashes
 echo "🔐 Calcul des hashes..."

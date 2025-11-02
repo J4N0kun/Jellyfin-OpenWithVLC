@@ -20,7 +20,27 @@ Ajoute un menu contextuel **"Ouvrir avec VLC"** dans Jellyfin Web pour lancer le
 
 ## 📦 Installation
 
-### Méthode 1 : Via le Repository Jellyfin (recommandé ⭐)
+### Méthode 1 : Userscript Tampermonkey/Violentmonkey (⭐ Simple et portable)
+
+**Installation rapide sans modifier Jellyfin :**
+
+1. **Installer une extension de userscript** dans votre navigateur :
+   - [Tampermonkey](https://www.tampermonkey.net/) (Chrome, Firefox, Edge, Safari)
+   - [Violentmonkey](https://violentmonkey.github.io/) (Chrome, Firefox, Edge)
+   - [Userscripts](https://apps.apple.com/app/userscripts/id1463298887) (Safari iOS)
+2. **Cliquer sur ce lien** pour installer le script :
+   - 📥 [Install Open With VLC.user.js](https://raw.githubusercontent.com/J4N0kun/Jellyfin-OpenWithVLC/main/open-with-vlc.user.js)
+3. Confirmer l'installation dans Tampermonkey/Violentmonkey
+4. **Rafraîchir Jellyfin Web** (Ctrl+Shift+R)
+
+✅ **Avantages** :
+- ✅ Aucune modification du serveur Jellyfin
+- ✅ Fonctionne immédiatement sans redémarrage
+- ✅ Portable entre navigateurs
+- ✅ Survit aux mises à jour de Jellyfin
+- ✅ Facile à désactiver/désinstaller
+
+### Méthode 2 : Via le Repository Jellyfin (installation serveur)
 
 Installation directe depuis le catalogue Jellyfin :
 
@@ -36,14 +56,14 @@ Installation directe depuis le catalogue Jellyfin :
 
 ✅ **Avantage** : Mises à jour automatiques disponibles dans Jellyfin !
 
-### Méthode 2 : Installation manuelle depuis GitHub
+### Méthode 3 : Installation manuelle depuis GitHub
 
 1. Télécharger la dernière version depuis [Releases](https://github.com/J4N0kun/Jellyfin-OpenWithVLC/releases)
 2. Ouvrir Jellyfin Web → **Dashboard** → **Plugins** → **Install Plugin** → **From Disk**
 3. Sélectionner le fichier ZIP téléchargé
 4. Redémarrer Jellyfin si nécessaire
 
-### Méthode 3 : Build manuel
+### Méthode 4 : Build manuel
 
 ```bash
 # Cloner le repository
@@ -76,17 +96,18 @@ Pour une ouverture automatique dans VLC, vous pouvez configurer le protocole `vl
 
 ```
 Jellyfin-OpenWithVLC/
-├── plugin.json          # Métadonnées du plugin
-├── README.md            # Documentation
-├── CHANGELOG.md         # Historique des versions
-├── build.sh             # Script de build
+├── plugin.json              # Métadonnées du plugin
+├── open-with-vlc.user.js    # Userscript Tampermonkey
+├── README.md                # Documentation
+├── CHANGELOG.md             # Historique des versions
+├── build.sh                 # Script de build
 ├── .github/
 │   └── workflows/
-│       ├── build.yml    # CI/CD pour builds automatiques
-│       └── release.yml  # Workflow de release
+│       ├── build.yml        # CI/CD pour builds automatiques
+│       └── release.yml      # Workflow de release
 └── web/
     └── js/
-        └── vlcMenu.js   # Code principal du plugin
+        └── vlcMenu.js       # Code principal du plugin
 ```
 
 ### Prérequis
