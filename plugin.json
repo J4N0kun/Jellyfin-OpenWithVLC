@@ -1,6 +1,6 @@
 {
-    "Name": "Jellyfin-OpenWithVLC",
-    "Id": "Jellyfin-OpenWithVLC",
+    "Name": "OpenWithVLC",
+    "Id": "OpenWithVLC",
     "Version": "1.0.0",
     "MinServerVersion": "10.11.1",
     "MaxServerVersion": "10.*.*",

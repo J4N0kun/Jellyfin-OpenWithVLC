@@ -1,0 +1,71 @@
+name: Release Plugin
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      
+    steps:
+    - name: 📥 Checkout du code
+      uses: actions/checkout@v4
+      
+    - name: 🔍 Validation du plugin
+      run: |
+        echo "Validation du plugin..."
+        jq empty plugin.json
+        node -c web/js/vlcMenu.js
+        echo "✅ Validation réussie"
+        
+    - name: 🔨 Build du plugin
+      run: |
+        chmod +x build.sh
+        ./build.sh
+        
+    - name: 📝 Extraction de la version
+      id: version
+      run: |
+        VERSION=$(jq -r '.Version' plugin.json)
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Version: $VERSION"
+        
+    - name: 📝 Extraction des notes de version
+      id: changelog
+      run: |
+        if [ -f CHANGELOG.md ]; then
+          # Extraction de la section correspondant à la version
+          VERSION="${{ steps.version.outputs.version }}"
+          NOTES=$(awk "/## \[$VERSION\]/,/## \[/" CHANGELOG.md | sed '$d')
+          if [ -z "$NOTES" ]; then
+            NOTES="Version $VERSION"
+          fi
+          echo "notes<<EOF" >> $GITHUB_OUTPUT
+          echo "$NOTES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        else
+          echo "notes=Version ${{ steps.version.outputs.version }}" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: 🚀 Création de la release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          dist/*.zip
+          dist/*.sha256
+        body: ${{ steps.changelog.outputs.notes }}
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: ✅ Release publiée
+      run: |
+        echo "🎉 Release v${{ steps.version.outputs.version }} publiée avec succès !"
+

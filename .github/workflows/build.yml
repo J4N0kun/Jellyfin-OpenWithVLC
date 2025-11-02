@@ -1,0 +1,69 @@
+name: Build Plugin
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout du code
+      uses: actions/checkout@v4
+      
+    - name: 🔍 Vérification des fichiers
+      run: |
+        echo "Vérification de la structure du projet..."
+        test -f plugin.json || { echo "❌ plugin.json manquant"; exit 1; }
+        test -f README.md || { echo "❌ README.md manquant"; exit 1; }
+        test -d web/js || { echo "❌ Dossier web/js manquant"; exit 1; }
+        test -f web/js/vlcMenu.js || { echo "❌ vlcMenu.js manquant"; exit 1; }
+        echo "✅ Tous les fichiers requis sont présents"
+        
+    - name: 📋 Validation du plugin.json
+      run: |
+        echo "Validation du fichier plugin.json..."
+        jq empty plugin.json || { echo "❌ plugin.json invalide"; exit 1; }
+        echo "✅ plugin.json valide"
+        
+        # Affichage des informations du plugin
+        echo "📦 Informations du plugin:"
+        echo "  Nom: $(jq -r '.Name' plugin.json)"
+        echo "  Version: $(jq -r '.Version' plugin.json)"
+        echo "  Description: $(jq -r '.Description' plugin.json)"
+        
+    - name: 🔍 Vérification JavaScript
+      run: |
+        echo "Vérification de la syntaxe JavaScript..."
+        node -c web/js/vlcMenu.js || { echo "❌ Erreur de syntaxe dans vlcMenu.js"; exit 1; }
+        echo "✅ Syntaxe JavaScript valide"
+        
+    - name: 🔨 Build du plugin
+      run: |
+        chmod +x build.sh
+        ./build.sh
+        
+    - name: 📊 Informations sur le build
+      run: |
+        echo "📦 Contenu du dossier dist:"
+        ls -lh dist/
+        echo ""
+        echo "🔐 Hash SHA256:"
+        cat dist/*.sha256
+        
+    - name: 📤 Upload des artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: jellyfin-openwithvlc-plugin
+        path: dist/*
+        retention-days: 30
+        
+    - name: ✅ Build terminé
+      run: |
+        echo "🎉 Build réussi !"
+        echo "Les artifacts sont disponibles dans l'onglet Actions"
+
