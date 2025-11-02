@@ -5,6 +5,19 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.3.1] - 2025-11-02
+
+### Corrigé
+- 🔧 **CRITIQUE : DLL maintenant incluse dans le package ZIP**
+- Workflow auto-release lance build-dotnet.sh AVANT build.sh
+- Le ZIP contient désormais OpenWithVLC.dll (5 Ko)
+- Package complet : DLL + JavaScript + plugin.json
+
+### Technique
+- Ajout de l'étape de build .NET dans le workflow
+- Affichage du contenu du ZIP pour vérification
+- Build Docker de la DLL systématique
+
 ## [1.3.0] - 2025-11-02
 
 ### Ajouté
@@ -115,6 +128,7 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
 ---
 
+[1.3.1]: https://github.com/J4N0kun/Jellyfin-OpenWithVLC/releases/tag/v1.3.1
 [1.3.0]: https://github.com/J4N0kun/Jellyfin-OpenWithVLC/releases/tag/v1.3.0
 [1.2.0]: https://github.com/J4N0kun/Jellyfin-OpenWithVLC/releases/tag/v1.2.0
 [1.1.2]: https://github.com/J4N0kun/Jellyfin-OpenWithVLC/releases/tag/v1.1.2
