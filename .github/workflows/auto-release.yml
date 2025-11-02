@@ -33,6 +33,7 @@ jobs:
     - name: 📥 Checkout du code
       uses: actions/checkout@v4
       with:
+        ref: main
         fetch-depth: 0
       
     - name: 📋 Détection de la version
@@ -171,13 +172,18 @@ jobs:
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
+        
+        # S'assurer d'être sur la branche main
+        git checkout main
+        git pull origin main
+        
         git add repository/manifest.json
         
         if git diff --staged --quiet; then
           echo "Aucun changement dans le manifest"
         else
           git commit -m "chore: auto-update manifest for v${{ steps.version.outputs.version }}"
-          git push
+          git push origin main
           echo "✅ Manifest poussé - GitHub Pages se mettra à jour automatiquement"
         fi
     
