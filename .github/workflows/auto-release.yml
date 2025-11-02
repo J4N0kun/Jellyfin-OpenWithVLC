@@ -92,25 +92,30 @@ jobs:
     # ============================================
     # ÉTAPE 4 : CALCUL DES CHECKSUMS
     # ============================================
-    - name: 📝 Extraction du changelog
+    - name: 📝 Extraction du changelog pour release notes
       id: changelog
       run: |
         VERSION="${{ steps.version.outputs.version }}"
         
         if [ -f CHANGELOG.md ]; then
-          # Extraire la section du changelog
-          NOTES=$(awk "/## \[$VERSION\]/,/## \[/" CHANGELOG.md | sed '1d;$d' | sed '/^$/d' || echo "")
+          # Extraire la section complète du changelog pour cette version
+          NOTES=$(awk "/## \[$VERSION\]/,/^## \[/{if(/^## \[$VERSION\]/) next; if(/^## \[/) exit; print}" CHANGELOG.md || echo "")
           
-          if [ -z "$NOTES" ]; then
+          # Si vide, utiliser un message par défaut
+          if [ -z "$NOTES" ] || [ "$NOTES" = "" ]; then
             NOTES="Version $VERSION - Voir CHANGELOG.md pour les détails"
           fi
         else
           NOTES="Version $VERSION"
         fi
         
-        # Sauvegarder dans un fichier pour éviter les problèmes de multiline
+        # Sauvegarder dans un fichier
         echo "$NOTES" > /tmp/release_notes.txt
-        echo "📝 Changelog extrait"
+        
+        echo "📝 Changelog extrait pour release notes:"
+        echo "---"
+        cat /tmp/release_notes.txt
+        echo "---"
     
     # ============================================
     # ÉTAPE 5 : EXTRACTION DU CHANGELOG
@@ -176,6 +181,7 @@ jobs:
                 "version": $version,
                 "changelog": $changelog,
                 "targetAbi": "10.11.1.0",
+                "sourceUrl": $url,
                 "checksum": $checksum,
                 "timestamp": $timestamp,
                 "artifacts": [
