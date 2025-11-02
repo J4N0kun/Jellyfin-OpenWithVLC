@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Jellyfin - Open With VLC
 // @namespace    https://github.com/J4N0kun/Jellyfin-OpenWithVLC
-// @version      1.4.1
+// @version      1.4.2
 // @description  Ajoute un menu contextuel "Ouvrir avec VLC" dans Jellyfin Web pour lancer les médias directement dans VLC
 // @author       J4N0kun
 // @match        https://*/*
@@ -143,7 +143,7 @@
      * Ajoute le bouton "Ouvrir avec VLC" dans les menus
      */
     function addVlcButton() {
-        // Cherche tous les boutons de menu (⋮)
+        // Cherche tous les boutons de menu (⋮) des cartes média
         document.querySelectorAll('.itemAction[data-action="menu"], .btnCardMenu, .cardOverlayButton-br').forEach(btn => {
             // Éviter les doublons
             if (btn.dataset.vlcAdded) return;
@@ -157,11 +157,8 @@
             });
         });
 
-        // Alternative : chercher directement les menus ouverts
-        document.querySelectorAll('.menu:not([data-vlc-processed])').forEach(menu => {
-            menu.dataset.vlcProcessed = true;
-            addVlcMenuEntryToMenu(menu);
-        });
+        // Note: On ne traite plus les menus existants au chargement
+        // pour éviter d'ajouter l'entrée VLC aux menus du header/navigation
     }
 
     /**
@@ -201,6 +198,12 @@
         if (!itemId) {
             const contextCard = document.querySelector('[data-id].detailPage-content, [data-id].itemDetailPage');
             itemId = contextCard ? getItemId(contextCard) : null;
+        }
+
+        // Ne pas ajouter le menu si on n'a pas d'itemId valide
+        if (!itemId) {
+            console.log('[OpenWithVLC] Pas d\'itemId trouvé, menu ignoré');
+            return;
         }
 
         // Créer l'élément de menu

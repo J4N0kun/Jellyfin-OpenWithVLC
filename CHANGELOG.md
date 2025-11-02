@@ -5,6 +5,19 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.4.2] - 2025-11-03
+
+### Corrigé
+- 🔧 **Menu VLC ne s'ajoute plus aux menus du header/navigation**
+- ❌ Le script ajoutait "Ouvrir avec VLC" aux mauvais menus (avec itemId: null)
+- ✅ Ajout d'une vérification : si pas d'itemId, le menu n'est pas ajouté
+- ✅ Désactivation de la détection automatique des menus existants au chargement
+
+### Technique
+- Vérification stricte de l'itemId avant d'ajouter l'entrée VLC
+- Focus uniquement sur les boutons de menu des cartes média
+- Logs de debug améliorés
+
 ## [1.4.1] - 2025-11-03
 
 ### Corrigé
