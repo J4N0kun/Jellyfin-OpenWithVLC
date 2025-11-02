@@ -5,6 +5,17 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.2.0] - 2025-11-02
+
+### Amélioré
+- 🎯 **Synchronisation parfaite** entre tags Git et versions du plugin
+- 📦 Version dans plugin.json correspond désormais toujours au tag
+- ✨ Workflow automatique entièrement opérationnel
+
+### Technique
+- Correction du workflow pour cohérence des versions
+- Build automatique, release, manifest et déploiement Pages synchronisés
+
 ## [1.1.2] - 2025-11-02
 
 ### Technique
@@ -85,6 +96,7 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
 ---
 
+[1.2.0]: https://github.com/J4N0kun/Jellyfin-OpenWithVLC/releases/tag/v1.2.0
 [1.1.2]: https://github.com/J4N0kun/Jellyfin-OpenWithVLC/releases/tag/v1.1.2
 [1.1.0]: https://github.com/J4N0kun/Jellyfin-OpenWithVLC/releases/tag/v1.1.0
 [1.0.1]: https://github.com/J4N0kun/Jellyfin-OpenWithVLC/releases/tag/v1.0.1
