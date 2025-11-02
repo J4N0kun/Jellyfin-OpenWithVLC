@@ -4,6 +4,13 @@ dist/
 *.zip
 *.sha256
 
+# .NET build artifacts
+bin/
+obj/
+*.dll
+*.pdb
+*.deps.json
+
 # OS files
 .DS_Store
 Thumbs.db

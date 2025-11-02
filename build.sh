@@ -28,6 +28,16 @@ cp plugin.json "$BUILD_DIR/$PLUGIN_NAME/"
 cp README.md "$BUILD_DIR/$PLUGIN_NAME/"
 cp -r web "$BUILD_DIR/$PLUGIN_NAME/"
 
+# Copier la DLL C# si elle existe
+if [ -f "bin/Release/net8.0/OpenWithVLC.dll" ]; then
+    echo "📦 Copie de la DLL C#..."
+    cp bin/Release/net8.0/OpenWithVLC.dll "$BUILD_DIR/$PLUGIN_NAME/"
+    echo "✅ DLL incluse dans le package"
+else
+    echo "⚠️  Avertissement : DLL non trouvée. Lancez ./build-dotnet.sh d'abord"
+    echo "   Le plugin sera un plugin web uniquement (sans backend C#)"
+fi
+
 # Création du ZIP
 echo "📦 Création de l'archive ZIP..."
 cd "$BUILD_DIR"

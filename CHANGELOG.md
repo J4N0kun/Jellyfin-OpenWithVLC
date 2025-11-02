@@ -5,6 +5,25 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.3.0] - 2025-11-02
+
+### Ajouté
+- 🎯 **Plugin C# backend** pour compatibilité complète avec Jellyfin
+- 🔧 Structure .NET 6.0 avec DLL chargeable par Jellyfin
+- 📦 ServiceRegistration pour injection de dépendances
+- 📝 Documentation complète du build C#
+
+### Amélioré
+- ✅ Plugin maintenant **entièrement compatible** avec le système de plugins Jellyfin
+- 🔄 JavaScript injecté automatiquement via le backend C#
+- 🏗️ Architecture professionnelle avec backend + frontend
+
+### Technique
+- Projet .NET 6.0 (`OpenWithVLC.csproj`)
+- Classe `Plugin.cs` héritant de `BasePlugin`
+- GUID synchronisé avec `plugin.json`
+- Ressources web embarquées dans la DLL
+
 ## [1.2.0] - 2025-11-02
 
 ### Amélioré
@@ -96,6 +115,7 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
 ---
 
+[1.3.0]: https://github.com/J4N0kun/Jellyfin-OpenWithVLC/releases/tag/v1.3.0
 [1.2.0]: https://github.com/J4N0kun/Jellyfin-OpenWithVLC/releases/tag/v1.2.0
 [1.1.2]: https://github.com/J4N0kun/Jellyfin-OpenWithVLC/releases/tag/v1.1.2
 [1.1.0]: https://github.com/J4N0kun/Jellyfin-OpenWithVLC/releases/tag/v1.1.0
