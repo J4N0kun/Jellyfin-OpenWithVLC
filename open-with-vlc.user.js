@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Jellyfin - Open With VLC
 // @namespace    https://github.com/J4N0kun/Jellyfin-OpenWithVLC
-// @version      1.4.0
+// @version      1.4.1
 // @description  Ajoute un menu contextuel "Ouvrir avec VLC" dans Jellyfin Web pour lancer les médias directement dans VLC
 // @author       J4N0kun
 // @match        https://*/*
@@ -14,16 +14,30 @@
 (function() {
     'use strict';
 
-    // Vérifier que nous sommes sur une page Jellyfin
-    if (!window.ApiClient && !(window.Emby && window.Emby.ApiClient)) {
-        return;
-    }
-
     /**
      * Récupère l'API Client Jellyfin
      */
     function getApiClient() {
         return window.ApiClient || (window.Emby && window.Emby.ApiClient);
+    }
+
+    /**
+     * Attend que l'API Client Jellyfin soit disponible
+     */
+    function waitForApiClient(callback, maxAttempts = 50) {
+        let attempts = 0;
+        const interval = setInterval(() => {
+            attempts++;
+            const apiClient = getApiClient();
+            
+            if (apiClient) {
+                clearInterval(interval);
+                callback();
+            } else if (attempts >= maxAttempts) {
+                clearInterval(interval);
+                console.log('[OpenWithVLC] API Client Jellyfin non trouvé après', maxAttempts, 'tentatives');
+            }
+        }, 200); // Vérifier toutes les 200ms
     }
 
     /**
@@ -226,23 +240,33 @@
         console.log('[OpenWithVLC] Menu ajouté pour item:', itemId);
     }
 
-    // Observer les changements du DOM pour détecter les nouveaux menus
-    const observer = new MutationObserver((mutations) => {
-        addVlcButton();
-    });
+    /**
+     * Initialise le plugin une fois l'API Client disponible
+     */
+    function initPlugin() {
+        console.log('[OpenWithVLC] Plugin chargé et actif');
 
-    observer.observe(document.body, { 
-        childList: true, 
-        subtree: true 
-    });
+        // Observer les changements du DOM pour détecter les nouveaux menus
+        const observer = new MutationObserver((mutations) => {
+            addVlcButton();
+        });
 
-    // Initialisation au chargement
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', addVlcButton);
-    } else {
+        observer.observe(document.body, { 
+            childList: true, 
+            subtree: true 
+        });
+
+        // Initialisation immédiate
         addVlcButton();
     }
 
-    console.log('[OpenWithVLC] Plugin chargé et actif');
+    // Attendre que l'API Client Jellyfin soit disponible
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            waitForApiClient(initPlugin);
+        });
+    } else {
+        waitForApiClient(initPlugin);
+    }
 })();
 

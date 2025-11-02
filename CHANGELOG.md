@@ -5,6 +5,19 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.4.1] - 2025-11-03
+
+### Corrigé
+- 🔧 **CRITIQUE : Userscript attend maintenant que l'API Client Jellyfin soit chargée**
+- ❌ Le script ne s'exécutait pas car il vérifiait `window.ApiClient` trop tôt
+- ✅ Ajout de `waitForApiClient()` pour attendre le chargement asynchrone de l'API
+- ✅ Le plugin s'initialise correctement une fois Jellyfin Web chargé
+
+### Technique
+- Fonction `waitForApiClient()` avec retry (50 tentatives max, 200ms d'intervalle)
+- Initialisation différée via callback `initPlugin()`
+- Logs de debug pour troubleshooting
+
 ## [1.4.0] - 2025-11-03
 
 ### Ajouté
