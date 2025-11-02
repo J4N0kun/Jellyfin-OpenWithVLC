@@ -99,8 +99,8 @@ jobs:
           </div>
           
           <h3>📋 Plugins Disponibles</h3>
-          <ul id="pluginList">
-            <li>Chargement...</li>
+          <ul id="pluginList" style="list-style: none; padding: 0;">
+            <li style="color: #888;">Chargement...</li>
           </ul>
           
           <h3>🔗 Liens</h3>
@@ -124,15 +124,26 @@ jobs:
               .then(r => r.json())
               .then(data => {
                 const list = document.getElementById('pluginList');
-                list.innerHTML = data.map(plugin => `
-                  <li>
-                    <strong>${plugin.name}</strong> v${plugin.versions[0].version}
-                    <br><small>${plugin.description}</small>
-                  </li>
-                `).join('');
+                list.innerHTML = data.map(plugin => {
+                  const latestVersion = plugin.versions[0];
+                  const downloadUrl = latestVersion.artifacts[0].url;
+                  const date = new Date(latestVersion.timestamp).toLocaleDateString('fr-FR');
+                  return `
+                    <li style="margin-bottom: 20px; padding: 15px; background: #2a2a2a; border-radius: 8px; border-left: 4px solid #00a4dc;">
+                      <strong style="font-size: 1.2em;">${plugin.name}</strong> 
+                      <span style="background: #00a4dc; padding: 4px 10px; border-radius: 12px; font-size: 0.85em; margin-left: 10px;">v${latestVersion.version}</span>
+                      <br>
+                      <p style="margin: 10px 0;">${plugin.description}</p>
+                      <p style="color: #888; font-size: 0.9em;">
+                        📅 ${date} • 
+                        📦 <a href="${downloadUrl}" style="color: #00d4ff;">Télécharger</a>
+                      </p>
+                    </li>
+                  `;
+                }).join('');
               })
               .catch(err => {
-                document.getElementById('pluginList').innerHTML = '<li>Erreur de chargement</li>';
+                document.getElementById('pluginList').innerHTML = '<li style="color: #d44;">❌ Erreur de chargement du manifest</li>';
               });
           </script>
         </body>
