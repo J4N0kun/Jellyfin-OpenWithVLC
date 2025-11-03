@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Jellyfin - Open With VLC
 // @namespace    https://github.com/J4N0kun/Jellyfin-OpenWithVLC
-// @version      1.5.2
+// @version      1.5.3
 // @description  Ajoute un menu contextuel "Ouvrir avec VLC" dans Jellyfin Web pour lancer les médias directement dans VLC
 // @author       J4N0kun
 // @match        https://*/*
@@ -129,37 +129,39 @@
         const backdrop = document.createElement('div');
         backdrop.className = 'vlc-backdrop';
         backdrop.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.7);
-            z-index: 9999;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            background: rgba(0,0,0,0.7) !important;
+            z-index: 999999 !important;
+            pointer-events: auto !important;
         `;
 
         // Créer le dialogue
         const dialog = document.createElement('div');
         dialog.className = 'dialog vlc-dialog';
         dialog.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: #181818;
-            border-radius: 8px;
-            padding: 2em;
-            max-width: 600px;
-            width: 90%;
-            z-index: 10000;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-            pointer-events: auto;
+            position: fixed !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            background: #181818 !important;
+            border-radius: 8px !important;
+            padding: 2em !important;
+            max-width: 600px !important;
+            width: 90% !important;
+            z-index: 1000000 !important;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
+            pointer-events: auto !important;
         `;
         
         // Empêcher la propagation des clics sur le dialogue
         dialog.addEventListener('click', (e) => {
             e.stopPropagation();
-        });
+            console.log('[OpenWithVLC] Click sur le dialogue détecté');
+        }, true);
 
         // Titre
         const title = document.createElement('h2');
@@ -223,12 +225,15 @@
         // Bouton "Fermer"
         const closeBtn = document.createElement('button');
         closeBtn.style.cssText = `
-            padding: 0.75em 1.5em;
-            background: #444;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
+            padding: 0.75em 1.5em !important;
+            background: #444 !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 4px !important;
+            cursor: pointer !important;
+            pointer-events: auto !important;
+            position: relative !important;
+            z-index: 1000001 !important;
         `;
         closeBtn.textContent = 'Fermer';
         closeBtn.type = 'button';
@@ -262,10 +267,23 @@
         };
 
         // Événements avec capture pour contourner les handlers Jellyfin
-        closeBtn.addEventListener('click', closeDialog, true);
-        closeBtn.addEventListener('mousedown', closeDialog, true);
+        closeBtn.addEventListener('click', (e) => {
+            console.log('[OpenWithVLC] Click sur bouton Fermer détecté !');
+            closeDialog(e);
+        }, true);
+        
+        closeBtn.addEventListener('mousedown', (e) => {
+            console.log('[OpenWithVLC] Mousedown sur bouton Fermer détecté !');
+            closeDialog(e);
+        }, true);
+        
+        closeBtn.addEventListener('touchstart', (e) => {
+            console.log('[OpenWithVLC] Touch sur bouton Fermer détecté !');
+            closeDialog(e);
+        }, true);
         
         backdrop.addEventListener('click', (e) => {
+            console.log('[OpenWithVLC] Click sur backdrop détecté', e.target === backdrop ? '(sur backdrop)' : '(sur enfant)');
             if (e.target === backdrop) {
                 closeDialog(e);
             }
