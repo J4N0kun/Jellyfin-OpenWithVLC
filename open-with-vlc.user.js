@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Jellyfin - Open With VLC
 // @namespace    https://github.com/J4N0kun/Jellyfin-OpenWithVLC
-// @version      1.5.0
+// @version      1.5.1
 // @description  Ajoute un menu contextuel "Ouvrir avec VLC" dans Jellyfin Web pour lancer les médias directement dans VLC
 // @author       J4N0kun
 // @match        https://*/*
@@ -125,60 +125,7 @@
     function showVlcDialog(mediaName, streamUrl) {
         const vlcUrl = `vlc://${streamUrl}`;
         
-        const dialogHtml = `
-            <div class="dialog vlc-dialog" style="
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background: #181818;
-                border-radius: 8px;
-                padding: 2em;
-                max-width: 600px;
-                width: 90%;
-                z-index: 10000;
-                box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-            ">
-                <h2 style="margin-top: 0; color: #fff;">🎬 ${mediaName}</h2>
-                <p style="color: #ccc;">URL de streaming copiée dans le presse-papiers !</p>
-                <div style="margin: 1.5em 0;">
-                    <label style="color: #aaa; display: block; margin-bottom: 0.5em;">Collez cette URL dans VLC :</label>
-                    <input type="text" readonly value="${streamUrl}" style="
-                        width: 100%;
-                        padding: 0.75em;
-                        background: #252525;
-                        border: 1px solid #444;
-                        border-radius: 4px;
-                        color: #fff;
-                        font-family: monospace;
-                        font-size: 0.9em;
-                    " onclick="this.select()">
-                </div>
-                <div style="margin: 1.5em 0;">
-                    <a href="${vlcUrl}" style="
-                        display: inline-block;
-                        padding: 0.75em 1.5em;
-                        background: #00A4DC;
-                        color: white;
-                        text-decoration: none;
-                        border-radius: 4px;
-                        margin-right: 1em;
-                    ">▶ Ouvrir dans VLC</a>
-                    <button class="vlc-close-btn" style="
-                        padding: 0.75em 1.5em;
-                        background: #444;
-                        color: white;
-                        border: none;
-                        border-radius: 4px;
-                        cursor: pointer;
-                    ">Fermer</button>
-                </div>
-                <p style="color: #888; font-size: 0.85em; margin-bottom: 0;">
-                    💡 Astuce : VLC → Média → Ouvrir un flux réseau
-                </p>
-            </div>
-        `;
-
+        // Créer le backdrop
         const backdrop = document.createElement('div');
         backdrop.className = 'vlc-backdrop';
         backdrop.style.cssText = `
@@ -190,21 +137,124 @@
             background: rgba(0,0,0,0.7);
             z-index: 9999;
         `;
-        backdrop.innerHTML = dialogHtml;
 
+        // Créer le dialogue
+        const dialog = document.createElement('div');
+        dialog.className = 'dialog vlc-dialog';
+        dialog.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #181818;
+            border-radius: 8px;
+            padding: 2em;
+            max-width: 600px;
+            width: 90%;
+            z-index: 10000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        `;
+
+        // Titre
+        const title = document.createElement('h2');
+        title.style.cssText = 'margin-top: 0; color: #fff;';
+        title.textContent = `🎬 ${mediaName}`;
+
+        // Message de confirmation
+        const message = document.createElement('p');
+        message.style.color = '#ccc';
+        message.textContent = 'URL de streaming copiée dans le presse-papiers !';
+
+        // Conteneur du champ URL
+        const urlContainer = document.createElement('div');
+        urlContainer.style.margin = '1.5em 0';
+
+        const label = document.createElement('label');
+        label.style.cssText = 'color: #aaa; display: block; margin-bottom: 0.5em;';
+        label.textContent = 'Collez cette URL dans VLC :';
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.readOnly = true;
+        input.value = streamUrl;
+        input.style.cssText = `
+            width: 100%;
+            padding: 0.75em;
+            background: #252525;
+            border: 1px solid #444;
+            border-radius: 4px;
+            color: #fff;
+            font-family: monospace;
+            font-size: 0.9em;
+            cursor: text;
+        `;
+        input.addEventListener('click', function() {
+            this.select();
+        });
+
+        urlContainer.appendChild(label);
+        urlContainer.appendChild(input);
+
+        // Conteneur des boutons
+        const buttonContainer = document.createElement('div');
+        buttonContainer.style.margin = '1.5em 0';
+
+        // Bouton "Ouvrir dans VLC"
+        const vlcLink = document.createElement('a');
+        vlcLink.href = vlcUrl;
+        vlcLink.style.cssText = `
+            display: inline-block;
+            padding: 0.75em 1.5em;
+            background: #00A4DC;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-right: 1em;
+            cursor: pointer;
+        `;
+        vlcLink.textContent = '▶ Ouvrir dans VLC';
+
+        // Bouton "Fermer"
+        const closeBtn = document.createElement('button');
+        closeBtn.style.cssText = `
+            padding: 0.75em 1.5em;
+            background: #444;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        `;
+        closeBtn.textContent = 'Fermer';
+
+        buttonContainer.appendChild(vlcLink);
+        buttonContainer.appendChild(closeBtn);
+
+        // Astuce
+        const tip = document.createElement('p');
+        tip.style.cssText = 'color: #888; font-size: 0.85em; margin-bottom: 0;';
+        tip.textContent = '💡 Astuce : VLC → Média → Ouvrir un flux réseau';
+
+        // Assembler le dialogue
+        dialog.appendChild(title);
+        dialog.appendChild(message);
+        dialog.appendChild(urlContainer);
+        dialog.appendChild(buttonContainer);
+        dialog.appendChild(tip);
+
+        backdrop.appendChild(dialog);
+
+        // Fonction de fermeture
         const closeDialog = () => {
             backdrop.remove();
         };
 
+        // Événements
+        closeBtn.addEventListener('click', closeDialog);
         backdrop.addEventListener('click', (e) => {
             if (e.target === backdrop) closeDialog();
         });
 
-        const closeBtn = backdrop.querySelector('.vlc-close-btn');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', closeDialog);
-        }
-
+        // Ajouter au DOM
         document.body.appendChild(backdrop);
     }
 

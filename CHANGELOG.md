@@ -5,6 +5,21 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.5.1] - 2025-11-03
+
+### Corrigé
+- 🔧 **CRITIQUE : Les boutons du dialogue sont maintenant fonctionnels**
+- ❌ Les événements n'étaient pas correctement attachés (innerHTML vs createElement)
+- ✅ Création manuelle des éléments DOM avec `createElement`
+- ✅ Attachement correct des événements avec `addEventListener`
+- ✅ Le bouton "Fermer" fonctionne maintenant
+- ✅ Le clic en dehors du dialogue ferme correctement
+
+### Technique
+- Refonte complète de `showVlcDialog()` sans `innerHTML`
+- Création de chaque élément individuellement
+- Événements attachés de manière programmatique
+
 ## [1.5.0] - 2025-11-03
 
 ### Ajouté
