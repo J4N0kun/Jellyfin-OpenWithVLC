@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Jellyfin - Open With VLC
 // @namespace    https://github.com/J4N0kun/Jellyfin-OpenWithVLC
-// @version      1.5.1
+// @version      1.5.2
 // @description  Ajoute un menu contextuel "Ouvrir avec VLC" dans Jellyfin Web pour lancer les médias directement dans VLC
 // @author       J4N0kun
 // @match        https://*/*
@@ -153,7 +153,13 @@
             width: 90%;
             z-index: 10000;
             box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            pointer-events: auto;
         `;
+        
+        // Empêcher la propagation des clics sur le dialogue
+        dialog.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
 
         // Titre
         const title = document.createElement('h2');
@@ -225,6 +231,7 @@
             cursor: pointer;
         `;
         closeBtn.textContent = 'Fermer';
+        closeBtn.type = 'button';
 
         buttonContainer.appendChild(vlcLink);
         buttonContainer.appendChild(closeBtn);
@@ -244,15 +251,25 @@
         backdrop.appendChild(dialog);
 
         // Fonction de fermeture
-        const closeDialog = () => {
+        const closeDialog = (e) => {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+            }
+            console.log('[OpenWithVLC] Fermeture du dialogue');
             backdrop.remove();
         };
 
-        // Événements
-        closeBtn.addEventListener('click', closeDialog);
+        // Événements avec capture pour contourner les handlers Jellyfin
+        closeBtn.addEventListener('click', closeDialog, true);
+        closeBtn.addEventListener('mousedown', closeDialog, true);
+        
         backdrop.addEventListener('click', (e) => {
-            if (e.target === backdrop) closeDialog();
-        });
+            if (e.target === backdrop) {
+                closeDialog(e);
+            }
+        }, true);
 
         // Ajouter au DOM
         document.body.appendChild(backdrop);

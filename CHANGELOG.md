@@ -5,6 +5,22 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.5.2] - 2025-11-03
+
+### Corrigé
+- 🔧 **CRITIQUE : Les boutons sont maintenant vraiment cliquables**
+- ❌ Conflit avec les event handlers de Jellyfin qui capturaient les clics
+- ✅ Utilisation de `capture: true` pour capturer les événements avant Jellyfin
+- ✅ Ajout de `mousedown` en plus de `click` pour contourner les handlers
+- ✅ `stopImmediatePropagation()` pour bloquer les autres handlers
+- ✅ `pointer-events: auto` sur le dialogue
+- ✅ Logs de debug pour vérifier la fermeture
+
+### Technique
+- Événements capturés en phase de capture (`addEventListener(..., true)`)
+- Double handler `click` + `mousedown` pour robustesse
+- Propagation bloquée sur le dialogue pour éviter les interférences
+
 ## [1.5.1] - 2025-11-03
 
 ### Corrigé
